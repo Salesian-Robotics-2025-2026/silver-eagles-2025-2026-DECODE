@@ -149,22 +149,20 @@ public class DuoTeleOpMainTest extends OpMode {
      * This method handles the movement of the robot.
      */
     public void driveTrain(){
-
-        double leftStickY = gamepad1.left_stick_y; // Y axis for forward/backward
+        double leftStickY = gamepad1.left_stick_y; // Y axis for forward/backwards
         double leftStickX = gamepad1.left_stick_x; // Left stick X for strafe
         double rightStickX = gamepad1.right_stick_x; // Right stick X for rotation
 
-        double positionalPower = leftStickY * positionalDampening; // Forward/backward movement
-        double rotationalPower = rightStickX * rotationalDampening; // Rotation
+        double forwardPower = leftStickY * 0.8; // Forward/backward movement
+        double rotationPower = rightStickX * 0.5; // Rotation
 
         // Calculate power for each motor
-        double powerLF = getPower(positionalPower + leftStickX - rotationalPower, false);  // Left Front
-        double powerRF = getPower(positionalPower + leftStickX + rotationalPower, false);  // Right Front
-        double powerLR = getPower(positionalPower + leftStickX - rotationalPower, false);  // Left Rear
-        double powerRR = getPower(positionalPower + leftStickX + rotationalPower, false);  // Right Rear
+        double powerLF = getPower(forwardPower - leftStickX - rotationPower, false);  // Left Front
+        double powerRF = getPower(forwardPower + leftStickX + rotationPower, false);  // Right Front
+        double powerLR = getPower(forwardPower + leftStickX - rotationPower, false);  // Left Rear
+        double powerRR = getPower(forwardPower - leftStickX + rotationPower, false);  // Right Rear
 
         // Set motor powers
-
         leftFront.setPower(powerLF);
         rightFront.setPower(powerRF);
         leftRear.setPower(powerLR);
@@ -254,6 +252,8 @@ public class DuoTeleOpMainTest extends OpMode {
 
         telemetry.addData("OUTTAKE DAMPENING % : ", Math.floor(outtakeDampening * 100) + "%");
         telemetry.addData("INTAKE POWER: ", intake.getPower());
+        telemetry.addData("DRIVE TRAIN SPEED % : ", Math.floor(positionalDampening * 100) + "%");
+
 
         telemetry.update();
     }
