@@ -75,9 +75,7 @@ public class OdomTest extends FtcOpMode
      *  Place the motors that you will be using here!
      */
     private DcMotor leftFront, rightFront, leftRear, rightRear;
-    private DcMotor intake;
-    private DcMotor leftOuttake;
-    private DcMotor rightOuttake;
+    private DcMotor intake, leftOuttake, rightOuttake;
     private DcMotor leftOdom, rightOdom, strafeOdom;
 
     //--------- SERVOS ------------
@@ -106,7 +104,7 @@ public class OdomTest extends FtcOpMode
         rightRear = hardwareMap.dcMotor.get("rightRear");
         leftOdom = hardwareMap.dcMotor.get("leftOdom");
         rightOdom = hardwareMap.dcMotor.get("rightOdom");
-        strafeOdom = hardwareMap.dcMotor.get("strafeOdom")
+        strafeOdom = hardwareMap.dcMotor.get("strafeOdom");
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
