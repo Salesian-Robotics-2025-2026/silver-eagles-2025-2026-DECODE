@@ -74,13 +74,11 @@ public class OdomTest extends FtcOpMode
     /**
      *  Place the motors that you will be using here!
      */
-    private DcMotor leftFront;
-    private DcMotor rightFront;
-    private DcMotor leftRear;
-    private DcMotor rightRear;
+    private DcMotor leftFront, rightFront, leftRear, rightRear;
     private DcMotor intake;
     private DcMotor leftOuttake;
     private DcMotor rightOuttake;
+    private DcMotor leftOdom, rightOdom, strafeOdom;
 
     //--------- SERVOS ------------
 
@@ -102,21 +100,13 @@ public class OdomTest extends FtcOpMode
         intake = hardwareMap.dcMotor.get("intake");
         leftOuttake =  hardwareMap.dcMotor.get("leftOuttake");
         rightOuttake =  hardwareMap.dcMotor.get("rightOuttake");
-    }
-    /**
-     * This method sets the zero power behavior for the wheels.
-     */
-
-    public void initWheels(){
-
-        //-- MOTORS
-
         leftFront = hardwareMap.dcMotor.get("leftFront");
         rightFront = hardwareMap.dcMotor.get("rightFront");
         leftRear = hardwareMap.dcMotor.get("leftRear");
         rightRear = hardwareMap.dcMotor.get("rightRear");
-
-        //--- BEHAVIOUR
+        leftOdom = hardwareMap.dcMotor.get("leftOdom");
+        rightOdom = hardwareMap.dcMotor.get("rightOdom");
+        strafeOdom = hardwareMap.dcMotor.get("strafeOdom")
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -124,19 +114,45 @@ public class OdomTest extends FtcOpMode
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
+    public void encodeOdomWheels(){
+        leftOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        strafeOdom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-    public void moveForward(double power, double duration, double delay){
+        leftOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        strafeOdom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+    }
+
+    public void moveForward(double power, double distance, double delay){
+
+        int targetTicks = (int) (distance * RobotParams.Odometry.TICKS_PER_INCH);
+        delay *= 1000;
+
+        encodeOdomWheels();
+
+        leftOdom.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightOdom.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         leftFront.setPower(power);
         rightFront.setPower(power);
         leftRear.setPower(power);
         rightRear.setPower(power);
 
+        while (opModeIsActive() && (leftOdom.isBusy() || rightOdom.isBusy())) {
+            telemetry.addData("Target Ticks", targetTicks);
+            telemetry.addData("Left Odom", leftOdom.getCurrentPosition());
+            telemetry.addData("Right Odom", rightOdom.getCurrentPosition());
+            telemetry.update();
+        }
+
         leftFront.setPower(0);
         rightFront.setPower(0);
         leftRear.setPower(0);
         rightRear.setPower(0);
 
+        sleep((long) delay);
     }
 
 
@@ -158,6 +174,7 @@ public class OdomTest extends FtcOpMode
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
     }
 
     /**
@@ -217,7 +234,6 @@ public class OdomTest extends FtcOpMode
 
         telemetry.addLine("Initalizing bebo auto");
         initMotors();
-        initWheels();
         setEncoders();
 
         //

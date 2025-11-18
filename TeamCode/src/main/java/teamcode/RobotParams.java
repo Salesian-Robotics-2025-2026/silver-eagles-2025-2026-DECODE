@@ -102,6 +102,23 @@ public class RobotParams
         public static final double ROBOT_WIDTH                  = 18.0;
     }   //class Robot
 
+
+    public static class Odometry {
+        // -- VERY IMPORTANT: These values must be measured from your robot --
+
+        // Ticks per revolution for your odometry encoders (e.g., REV Through Bore is 8192)
+        public static final double TICKS_PER_REV = 8192;
+
+        // Diameter of your odometry wheels in inches
+        public static final double WHEEL_DIAMETER_INCHES = 2.0; // Example: 2-inch wheel
+
+        // Distance between the two parallel odometry wheels in inches
+        public static final double TRACK_WIDTH_INCHES = 15.5; // Example: 15.5 inches apart
+
+        // -- Calculated value --
+        public static final double TICKS_PER_INCH = TICKS_PER_REV / (WHEEL_DIAMETER_INCHES * Math.PI);
+    }
+
     /**
      * This class contains season specific game element information.
      */
