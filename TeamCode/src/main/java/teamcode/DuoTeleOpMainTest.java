@@ -2,8 +2,10 @@ package teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "DuoTeleOpMainTest", group = "TeleOp")
 public class DuoTeleOpMainTest extends OpMode {
 
@@ -24,8 +26,13 @@ public class DuoTeleOpMainTest extends OpMode {
 
     /**
      *  Place the servos that you will be using here!
-     *  TODO: Add the servos once the robot is doing being built.
      */
+
+    private CRServo rightFrontMidtake;
+    private CRServo leftFrontMidtake;
+    private CRServo rightRearMidtake;
+    private CRServo leftRearMidtake;
+
 
 
     //--------- EDITING VARIABLES ------------
@@ -34,9 +41,6 @@ public class DuoTeleOpMainTest extends OpMode {
      * The values given below are their defaults.
      * These variables are designed to be configured by the driver in teleOp.
      */
-
-    private double rotationalDampening = 0.5;
-    private double positionalDampening = 0.8;
     private double outtakeDampening = 0.5;
 
     //--------------------------------------------------------
@@ -70,7 +74,7 @@ public class DuoTeleOpMainTest extends OpMode {
 
         if (gamepad1.a) {
             leftOuttake.setPower(-1 * outtakeDampening);
-            rightOuttake.setPower(1 * outtakeDampening); //-- reversed motor you love to see it >:(
+            rightOuttake.setPower(1 * outtakeDampening);
         }
         else
         {
@@ -81,10 +85,28 @@ public class DuoTeleOpMainTest extends OpMode {
         //-- INTAKE
 
         if (gamepad1.b){
-            intake.setPower(1 * outtakeDampening);
+            //intake.setPower(-1 * outtakeDampening);
+            intake.setPower(-1);
+            rightFrontMidtake.setPower(1);
+           /// rightRearMidtake.setPower(1);
+            leftFrontMidtake.setPower(-1);
+            leftRearMidtake.setPower(-1);
+
+
+
+
+
         }
         else {
             intake.setPower(0);
+            rightFrontMidtake.setPower(0);
+            //rightRearMidtake.setPower(0);
+            leftFrontMidtake.setPower(0);
+            leftRearMidtake.setPower(0);
+
+
+
+
         }
     }
 
@@ -116,62 +138,34 @@ public class DuoTeleOpMainTest extends OpMode {
             }
         }
 
-        //-- DRIVE SPEED ADJUSTMENT
-
-        if (gamepad2.dpad_left){
-
-            positionalDampening += 0.01;
-            rotationalDampening += 0.01;
-
-            if (positionalDampening > 0 ){
-                positionalDampening = 0;
-            }
-            else if (rotationalDampening > 0 ){
-                rotationalDampening = 0;
-            }
-
-        }
-        else if (gamepad2.dpad_right){
-
-            positionalDampening -= 0.01;
-            rotationalDampening -= 0.01;
-
-            if (positionalDampening < 0 ){
-                positionalDampening = 0;
-            }
-            else if (rotationalDampening < 0 ){
-                rotationalDampening = 0;
-            }
-        }
     }
 
     /**
      * This method handles the movement of the robot.
      */
     public void driveTrain(){
-        double leftStickY = gamepad1.left_stick_y; // Y axis for forward/backwards
-        double leftStickX = gamepad1.left_stick_x; // Left stick X for strafe
+        double leftStickY = gamepad1.left_stick_x; // Y axis for forward/backwards
+        double leftStickX = gamepad1.left_stick_y; // Left stick X for strafe
         double rightStickX = gamepad1.right_stick_x; // Right stick X for rotation
 
-        double forwardPower = leftStickY * 0.8; // Forward/backward movement
+        double forwardPower = -leftStickY * 0.8; // Forward/backward movement
         double rotationPower = rightStickX * 0.5; // Rotation
 
         // Calculate power for each motor
-        double powerLF = getPower(forwardPower - leftStickX - rotationPower, false);  // Left Front
-        double powerRF = getPower(forwardPower + leftStickX + rotationPower, false);  // Right Front
-        double powerLR = getPower(forwardPower + leftStickX - rotationPower, false);  // Left Rear
-        double powerRR = getPower(forwardPower - leftStickX + rotationPower, false);  // Right Rear
+        double powerLF = getPower(forwardPower + leftStickX - rotationPower, false);  // Left Front
+        double powerRF = getPower(forwardPower - leftStickX - rotationPower, false);  // Right Front
+        double powerLR = getPower(forwardPower - leftStickX + rotationPower, false);  // Left Rear
+        double powerRR = getPower(forwardPower + leftStickX + rotationPower, false);  // Right Rear
 
         // Set motor powers
         leftFront.setPower(powerLF);
         rightFront.setPower(powerRF);
-        leftRear.setPower(powerLR);
-        rightRear.setPower(powerRR);
+        leftRear.setPower(-powerLR);
+        rightRear.setPower(-powerRR);
     }
 
     /**
-     * This method initializes the motors, TODO: try to streamline this with a-
-     * - foor loop? maybe?
+     * This method initializes the motors
      */
     public void initMotors(){
         intake = hardwareMap.dcMotor.get("intake");
@@ -180,7 +174,18 @@ public class DuoTeleOpMainTest extends OpMode {
     }
 
     /**
-     * This method sets the zero power behavior for the motors.
+     * This method initializes the servos.
+     */
+
+    public void initServos(){
+        leftFrontMidtake = hardwareMap.get(CRServo.class, "leftFrontMidtake");
+        leftRearMidtake = hardwareMap.get(CRServo.class, "leftRearMidtake");
+        rightFrontMidtake = hardwareMap.get(CRServo.class, "rightFrontMidtake");
+        ///rightRearMidtake = hardwareMap.get(CRServo.class, "rightRearMidtake");
+    }
+
+    /**
+     * This method sets the zero power behavior for the wheels.
      */
 
     public void initWheels(){
@@ -236,6 +241,7 @@ public class DuoTeleOpMainTest extends OpMode {
         telemetry.addLine("Initalizing bebo V2.0...");
         initMotors();
         initWheels();
+        initServos();
         setEncoders();
     }
 
@@ -249,11 +255,6 @@ public class DuoTeleOpMainTest extends OpMode {
         driveTrain();
         gamepad2Controls();
         gamepad1Controls();
-
-        telemetry.addData("OUTTAKE DAMPENING % : ", Math.floor(outtakeDampening * 100) + "%");
-        telemetry.addData("INTAKE POWER: ", intake.getPower());
-        telemetry.addData("DRIVE TRAIN SPEED % : ", Math.floor(positionalDampening * 100) + "%");
-
 
         telemetry.update();
     }
