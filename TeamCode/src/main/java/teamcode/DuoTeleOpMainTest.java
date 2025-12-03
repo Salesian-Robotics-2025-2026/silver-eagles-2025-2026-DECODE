@@ -1,9 +1,14 @@
 package teamcode;
 
+import static trclib.timer.TrcTimer.sleep;
+
+import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import org.opencv.core.Core;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "DuoTeleOpMainTest", group = "TeleOp")
@@ -14,13 +19,9 @@ public class DuoTeleOpMainTest extends OpMode {
     /**
      *  Place the motors that you will be using here!
      */
-    private DcMotor leftFront;
-    private DcMotor rightFront;
-    private DcMotor leftRear;
-    private DcMotor rightRear;
-    private DcMotor intake;
-    private DcMotor leftOuttake;
-    private DcMotor rightOuttake;
+
+    private DcMotor leftFront, rightFront, leftRear, rightRear;
+    private DcMotor intake, outtake;
 
     //--------- SERVOS ------------
 
@@ -28,22 +29,15 @@ public class DuoTeleOpMainTest extends OpMode {
      *  Place the servos that you will be using here!
      */
 
-    private CRServo rightFrontMidtake;
-    private CRServo leftFrontMidtake;
-    private CRServo rightRearMidtake;
-    private CRServo leftRearMidtake;
+    private Servo midtake;
 
-
-
-    //--------- EDITING VARIABLES ------------
+    //--------- VARIABLES ------------
 
     /**
-     * The values given below are their defaults.
-     * These variables are designed to be configured by the driver in teleOp.
+     *  Place the variables that you will be using here!
      */
-    private double outtakeDampening = 0.5;
 
-    //--------------------------------------------------------
+    private double midtakeFlipPosition = 90;
 
     //-------- METHODS ---------------
     //-- Place your methods here!
@@ -70,48 +64,8 @@ public class DuoTeleOpMainTest extends OpMode {
      */
     public void gamepad1Controls(){
 
-        //-- OUTTAKE SHOOTING
-
-        if (gamepad1.a) {
-            leftOuttake.setPower(-1 * outtakeDampening);
-            rightOuttake.setPower(1 * outtakeDampening);
-        }
-        else
-        {
-            leftOuttake.setPower(0);
-            rightOuttake.setPower(0);
-        }
-
-        //-- INTAKE
-
-        if (gamepad1.b){
-            //intake.setPower(-1 * outtakeDampening);
-            intake.setPower(-1);
-            rightFrontMidtake.setPower(1);
-           /// rightRearMidtake.setPower(1);
-            leftFrontMidtake.setPower(-1);
-            leftRearMidtake.setPower(-1);
-
-
-
-
-
-        }
-        else {
-            intake.setPower(0);
-            rightFrontMidtake.setPower(0);
-            //rightRearMidtake.setPower(0);
-            leftFrontMidtake.setPower(0);
-            leftRearMidtake.setPower(0);
-
-
-
-
-        }
     }
 
-
-    //-- INTAKE CONTROLS
 
     /**
      * This method controls gamepad2.
@@ -119,25 +73,32 @@ public class DuoTeleOpMainTest extends OpMode {
      */
     public void gamepad2Controls(){
 
-        //-- OUTTAKE MOTOR ADJUSTMENT
+        //-- OUTTAKE SHOOTING
 
-        if (gamepad2.dpad_up){
-
-            outtakeDampening += 0.01;
-
-            if (outtakeDampening > 1 ){
-                outtakeDampening = 1;
-            }
-
+        if (gamepad2.x) {
+            outtake.setPower(1);
         }
-        else if (gamepad2.dpad_down){
-            outtakeDampening -= 0.01;
-
-            if (outtakeDampening < 0 ){
-                outtakeDampening = 0;
-            }
+        else
+        {
+            outtake.setPower(0);
         }
 
+        //-- INTAKE
+
+        if (gamepad2.b){
+
+            intake.setPower(1);
+        }
+        else {
+            intake.setPower(0);
+        }
+
+        if (gamepad2.a) {
+            midtake.setPosition(midtakeFlipPosition);
+        }
+        else {
+            midtake.setPosition(0);
+        }
     }
 
     /**
@@ -152,45 +113,28 @@ public class DuoTeleOpMainTest extends OpMode {
         double rotationPower = rightStickX * 0.5; // Rotation
 
         // Calculate power for each motor
-        double powerLF = getPower(forwardPower + leftStickX - rotationPower, false);  // Left Front
-        double powerRF = getPower(forwardPower - leftStickX - rotationPower, false);  // Right Front
-        double powerLR = getPower(forwardPower - leftStickX + rotationPower, false);  // Left Rear
-        double powerRR = getPower(forwardPower + leftStickX + rotationPower, false);  // Right Rear
+
+        double powerLF = forwardPower + leftStickX - rotationPower;  // Left Front
+        double powerRF = forwardPower - leftStickX - rotationPower;  // Right Front
+        double powerLR = forwardPower - leftStickX + rotationPower;  // Left Rear
+        double powerRR = forwardPower + leftStickX + rotationPower;  // Right Rear
 
         // Set motor powers
-        leftFront.setPower(powerLF);
-        rightFront.setPower(powerRF);
-        leftRear.setPower(-powerLR);
-        rightRear.setPower(-powerRR);
+        leftFront.setPower(-powerLF);
+        rightFront.setPower(-powerRF);
+        leftRear.setPower(powerLR);
+        rightRear.setPower(powerRR);
     }
 
     /**
      * This method initializes the motors
      */
     public void initMotors(){
-        intake = hardwareMap.dcMotor.get("intake");
-        leftOuttake =  hardwareMap.dcMotor.get("leftOuttake");
-        rightOuttake =  hardwareMap.dcMotor.get("rightOuttake");
-    }
-
-    /**
-     * This method initializes the servos.
-     */
-
-    public void initServos(){
-        leftFrontMidtake = hardwareMap.get(CRServo.class, "leftFrontMidtake");
-        leftRearMidtake = hardwareMap.get(CRServo.class, "leftRearMidtake");
-        rightFrontMidtake = hardwareMap.get(CRServo.class, "rightFrontMidtake");
-        ///rightRearMidtake = hardwareMap.get(CRServo.class, "rightRearMidtake");
-    }
-
-    /**
-     * This method sets the zero power behavior for the wheels.
-     */
-
-    public void initWheels(){
 
         //-- MOTORS
+
+        intake =  hardwareMap.dcMotor.get("intake");
+        outtake =  hardwareMap.dcMotor.get("outtake");
 
         leftFront = hardwareMap.dcMotor.get("leftFront");
         rightFront = hardwareMap.dcMotor.get("rightFront");
@@ -206,6 +150,16 @@ public class DuoTeleOpMainTest extends OpMode {
     }
 
     /**
+     * This method initializes the servos.
+     */
+
+    public void initServos(){
+        midtake = hardwareMap.get(Servo.class, "midtake");
+        midtake.setDirection(Servo.Direction.REVERSE);
+        midtake.setPosition(0);
+    }
+
+    /**
      * This method resets & sets up motor encoders.
      */
     public void setEncoders(){
@@ -216,9 +170,8 @@ public class DuoTeleOpMainTest extends OpMode {
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        outtake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftOuttake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightOuttake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         //-- sets up encoders after their reset
 
@@ -226,9 +179,8 @@ public class DuoTeleOpMainTest extends OpMode {
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftOuttake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightOuttake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     /**
@@ -239,14 +191,14 @@ public class DuoTeleOpMainTest extends OpMode {
     @Override
     public void init() {
         telemetry.addLine("Initalizing bebo V2.0...");
+
         initMotors();
-        initWheels();
         initServos();
         setEncoders();
     }
 
     /**
-     * This method runs every frame, essential for gamepad controls and such.
+     * This method runs every frame; essential for gamepad controls and such.
      */
 
     @Override

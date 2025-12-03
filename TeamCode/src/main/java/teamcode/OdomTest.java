@@ -24,6 +24,8 @@ package teamcode;
 
 import androidx.annotation.NonNull;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -45,10 +47,12 @@ import trclib.timer.TrcTimer;
 /**
  * This class contains the Autonomous Mode program.
  */
-@Autonomous(name="FtcAutonomous", group="FtcTeam")
+@Autonomous(name="OdomTest", group="FtcTeam")
 public class OdomTest extends FtcOpMode
 {
     private final String moduleName = getClass().getSimpleName();
+    private Timer pathTimer, opModeTimer;
+    private Follower follower;
 
     public enum Alliance
     {
