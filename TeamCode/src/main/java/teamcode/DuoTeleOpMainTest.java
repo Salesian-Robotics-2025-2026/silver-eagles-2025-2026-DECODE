@@ -21,7 +21,7 @@ public class DuoTeleOpMainTest extends OpMode {
      */
 
     private DcMotor leftFront, rightFront, leftRear, rightRear;
-    private DcMotor intake, outtake;
+    private DcMotor leftIntake, rightIntake, outtake;
 
     //--------- SERVOS ------------
 
@@ -29,7 +29,7 @@ public class DuoTeleOpMainTest extends OpMode {
      *  Place the servos that you will be using here!
      */
 
-    private Servo midtake;
+    private Servo flipper;
 
     //--------- VARIABLES ------------
 
@@ -37,7 +37,8 @@ public class DuoTeleOpMainTest extends OpMode {
      *  Place the variables that you will be using here!
      */
 
-    private double midtakeFlipPosition = 90;
+    // Adrian was in the code
+    private double flipperFlipPosition = 90;
 
     //-------- METHODS ---------------
     //-- Place your methods here!
@@ -87,17 +88,19 @@ public class DuoTeleOpMainTest extends OpMode {
 
         if (gamepad2.b){
 
-            intake.setPower(1);
+            leftIntake.setPower(1);
+            rightIntake.setPower(1);
         }
         else {
-            intake.setPower(0);
+            leftIntake.setPower(0);
+            rightIntake.setPower(0);
         }
 
         if (gamepad2.a) {
-            midtake.setPosition(midtakeFlipPosition);
+            flipper.setPosition(flipperFlipPosition);
         }
         else {
-            midtake.setPosition(0);
+            flipper.setPosition(0);
         }
     }
 
@@ -114,10 +117,10 @@ public class DuoTeleOpMainTest extends OpMode {
 
         // Calculate power for each motor
 
-        double powerLF = forwardPower + leftStickX - rotationPower;  // Left Front
-        double powerRF = forwardPower - leftStickX - rotationPower;  // Right Front
-        double powerLR = forwardPower - leftStickX + rotationPower;  // Left Rear
-        double powerRR = forwardPower + leftStickX + rotationPower;  // Right Rear
+        double powerLF = forwardPower + leftStickX + rotationPower;  // Left Front
+        double powerRF = forwardPower - leftStickX + rotationPower;  // Right Front
+        double powerLR = forwardPower - leftStickX - rotationPower;  // Left Rear
+        double powerRR = forwardPower + leftStickX - rotationPower;  // Right Rear
 
         // Set motor powers
         leftFront.setPower(-powerLF);
@@ -133,7 +136,8 @@ public class DuoTeleOpMainTest extends OpMode {
 
         //-- MOTORS
 
-        intake =  hardwareMap.dcMotor.get("intake");
+        leftIntake =  hardwareMap.dcMotor.get("leftIntake");
+        rightIntake =  hardwareMap.dcMotor.get("rightIntake");
         outtake =  hardwareMap.dcMotor.get("outtake");
 
         leftFront = hardwareMap.dcMotor.get("leftFront");
@@ -147,6 +151,8 @@ public class DuoTeleOpMainTest extends OpMode {
         rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        rightIntake.setDirection(DcMotor.Direction.REVERSE);
     }
 
     /**
@@ -154,33 +160,22 @@ public class DuoTeleOpMainTest extends OpMode {
      */
 
     public void initServos(){
-        midtake = hardwareMap.get(Servo.class, "midtake");
-        midtake.setDirection(Servo.Direction.REVERSE);
-        midtake.setPosition(0);
+        flipper = hardwareMap.get(Servo.class, "flipper");
+        flipper.setDirection(Servo.Direction.REVERSE);
+        flipper.setPosition(0);
     }
 
     /**
      * This method resets & sets up motor encoders.
      */
     public void setEncoders(){
-
-        //-- Resets the encoders
-
-        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        outtake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intake.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        //-- sets up encoders after their reset
-
         rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         outtake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     /**
